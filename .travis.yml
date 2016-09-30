@@ -14,5 +14,5 @@ install:
   - mvn deploy -DskipTests -Pdocker
 
 after_success:
-  - docker tag marketreaction/backtesting:TRAVIS_BUILD_NUMBER marketreaction/backtesting:latest
+  - docker tag marketreaction/backtesting:$TRAVIS_BUILD_NUMBER marketreaction/backtesting:latest
   - docker push marketreaction/backtesting:latest
