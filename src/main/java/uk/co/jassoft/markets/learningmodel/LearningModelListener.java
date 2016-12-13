@@ -51,6 +51,7 @@ public class LearningModelListener {
             final TextMessage textMessage = (TextMessage) message;
 
             try {
+                message.acknowledge();
 
                 final Quote quote = quoteRepository.findOne(textMessage.getText());
 
