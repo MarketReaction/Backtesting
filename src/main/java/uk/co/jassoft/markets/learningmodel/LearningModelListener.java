@@ -58,10 +58,9 @@ public class LearningModelListener {
                 List<Quote> quotes;
 
                 // TODO behave differently if intraday to be able to calculate time since sentiment change to quote change
-                if(quote.isIntraday()) {
+                if (quote.isIntraday()) {
                     quotes = quoteRepository.findByCompanyAndIntradayAndDateLessThan(quote.getCompany(), false, quote.getDate(), new PageRequest(0, 7, new Sort(Sort.Direction.ASC, "date")));
-                }
-                else {
+                } else {
                     quotes = quoteRepository.findByCompanyAndIntradayAndDateLessThan(quote.getCompany(), false, quote.getDate(), new PageRequest(0, 7, new Sort(Sort.Direction.ASC, "date")));
                 }
 
@@ -69,24 +68,32 @@ public class LearningModelListener {
 
                 final List<StorySentiment> storySentiments = storySentimentRepository.findByCompany(company.getId());
 
-                LearningModelRecord learningModelRecord = LearningModelRecordBuilder.aLearningModelRecord()
-                        .withExchange(company.getExchange())
-                        .withCompany(company.getId())
-                        .withPreviousQuoteDirection(QuoteUtils.getPreviousPriceDirection(quotes))
-                        .withPreviousSentimentDirection(SentimentUtil.getPreviousSentimentDirection(storySentiments, quote.getDate()))
-                        .withLastSentimentDifferenceFromAverage(SentimentUtil.getLastSentimentDifferenceFromAverage(storySentiments, quote.getDate()))
-                        .withLastSentiment(SentimentUtil.getLastSentiment(storySentiments))
-                        .withQuoteChangeDate(quote.getDate())
-                        .build();
+                if (storySentiments.isEmpty())
+                    return;
 
-                double change = QuoteUtils.getPriceChange(quotes);
+                try {
 
-                learningModelRecord.setResultingQuoteChange(change);
+                    LearningModelRecord learningModelRecord = LearningModelRecordBuilder.aLearningModelRecord()
+                            .withExchange(company.getExchange())
+                            .withCompany(company.getId())
+                            .withPreviousQuoteDirection(QuoteUtils.getPreviousPriceDirection(quotes))
+                            .withPreviousSentimentDirection(SentimentUtil.getPreviousSentimentDirection(storySentiments, quote.getDate()))
+                            .withLastSentimentDifferenceFromAverage(SentimentUtil.getLastSentimentDifferenceFromAverage(storySentiments, quote.getDate()))
+                            .withLastSentiment(SentimentUtil.getLastSentiment(storySentiments))
+                            .withQuoteChangeDate(quote.getDate())
+                            .build();
 
-                learningModelRepository.save(learningModelRecord);
-            }
-            catch (QuotePriceCalculationException | SentimentException exception) {
-                LOG.info(exception.getLocalizedMessage());
+                    double change = QuoteUtils.getPriceChange(quotes);
+
+                    learningModelRecord.setResultingQuoteChange(change);
+
+                    learningModelRepository.save(learningModelRecord);
+
+                } catch (QuotePriceCalculationException | SentimentException exception) {
+                    LOG.info(exception.getLocalizedMessage());
+                } catch (Exception exception) {
+                    LOG.error(String.format("Failed to generate LearningModelRecord for Company [%s] ID [%s]", company.getName(), company.getId()), exception);
+                }
             }
             catch (final Exception exception) {
                 LOG.error(exception.getLocalizedMessage(), exception);
