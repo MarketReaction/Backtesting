@@ -90,7 +90,7 @@ public class LearningModelListener {
                     learningModelRepository.save(learningModelRecord);
 
                 } catch (QuotePriceCalculationException | SentimentException exception) {
-                    LOG.info(exception.getLocalizedMessage());
+                    LOG.debug(exception.getLocalizedMessage());
                 } catch (Exception exception) {
                     LOG.error(String.format("Failed to generate LearningModelRecord for Company [%s] ID [%s]", company.getName(), company.getId()), exception);
                 }
