@@ -59,7 +59,8 @@ public class LearningModelListener {
 
                 // TODO behave differently if intraday to be able to calculate time since sentiment change to quote change
                 if (quote.isIntraday()) {
-                    quotes = quoteRepository.findByCompanyAndIntradayAndDateLessThan(quote.getCompany(), false, quote.getDate(), new PageRequest(0, 7, new Sort(Sort.Direction.ASC, "date")));
+                    return; // Dont currently do anything with intraday quotes
+//                    quotes = quoteRepository.findByCompanyAndIntradayAndDateLessThan(quote.getCompany(), false, quote.getDate(), new PageRequest(0, 7, new Sort(Sort.Direction.ASC, "date")));
                 } else {
                     quotes = quoteRepository.findByCompanyAndIntradayAndDateLessThan(quote.getCompany(), false, quote.getDate(), new PageRequest(0, 7, new Sort(Sort.Direction.ASC, "date")));
                 }
